@@ -32,7 +32,7 @@ class ClientServiceTest {
 
     @Test
     public void testCreateClientSuccess(){
-        when(clientRepository.existsByEmail(eq("test@test.ru"))).thenReturn(false);
+        when(clientRepository.existsByEmail(eq("test@test.com"))).thenReturn(false);
         when(clientRepository.save(any())).thenReturn(builtDefailtClient());
 
         Client client = clientService.createClient(builtDefaultClientDto());
@@ -137,7 +137,7 @@ class ClientServiceTest {
 
     @Test
     void isActiveClient_nullId_returnsTrue() {
-        when(clientRepository.findById(null)).thenReturn(Optional.empty());
+        when(clientRepository.findById(any())).thenReturn(Optional.empty());
 
         boolean active = clientService.isActiveClient(null);
         assertTrue(active);

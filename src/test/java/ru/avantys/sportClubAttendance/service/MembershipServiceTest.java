@@ -72,7 +72,7 @@ class MembershipServiceTest {
     @Test
     public void invalid_getMembershipById_withNonExistentId() {
         UUID nonExistentId = UUID.randomUUID();
-        when(membershipRepository.findById(nonExistentId)).thenReturn(null);
+        //when(membershipRepository.findById(nonExistentId)).thenReturn(null);
         Optional<Membership> membership = membershipService.getMembershipById(nonExistentId);
         assertTrue(membership.isPresent());
         assertEquals(nonExistentId, membership.get().getId());
