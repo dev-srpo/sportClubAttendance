@@ -23,6 +23,7 @@ class ClientServiceTest {
     @Mock
     ClientRepository clientRepository;
 
+    @Mock
     ClientService clientService;
 
     @BeforeEach
@@ -77,9 +78,9 @@ class ClientServiceTest {
     // TODO(Доработать тест)
     @Test
     public void testUpdateClientFailWhereClientNotExist(){
-        when(clientRepository.findById(eq(UUID.fromString("00000000-0000-0000-0000-000000000001"))))
+        when(clientRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001")))
                 .thenReturn(Optional.of(builtDefailtClient()));
-        when(clientRepository.existsByEmail(eq("test@test.com"))).thenReturn(false);
+        when(clientRepository.existsByEmail("test@test.com")).thenReturn(false);
         when(clientRepository.save(any())).thenReturn(builtDefailtClient());
 
         var clientDto = builtDefaultClientDto();

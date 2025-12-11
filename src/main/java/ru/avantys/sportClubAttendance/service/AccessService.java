@@ -46,8 +46,6 @@ public class AccessService {
             throw new AccessRuleNotFoundException("AccessRule not found with id: " + id);
         }
         accessRuleRepository.deleteById(id);
-
-        accessRuleRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
