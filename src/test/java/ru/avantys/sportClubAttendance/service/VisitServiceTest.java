@@ -135,35 +135,61 @@ class VisitServiceTest {
     }
 
     @Test
-    void createVisit_noSaveMock_npe() {
+    void createVisit_noSaveMock_corrected() {
         UUID id = UUID.randomUUID();
         Membership m = new Membership();
         m.setId(id);
 
+        Visit saved = new Visit();
+        saved.setId(UUID.randomUUID());
+        saved.setEntryTime(LocalDateTime.now());
+        saved.setZone("A");
+
         when(membershipService.getMembershipById(id)).thenReturn(Optional.of(m));
         when(visitRepository.findLastVisitByMembershipId(id)).thenReturn(Optional.empty());
+        when(visitRepository.save(any())).thenReturn(saved);
 
         Visit result = visitService.createVisit(id, "A");
+
+        assertNotNull(result);
         assertNotNull(result.getEntryTime());
+        assertEquals("A", result.getZone());
+
+        verify(visitRepository).save(any());
     }
 
+
     @Test
-    void recordExit_noVisit_returnsVisit() {
+    void recordExit_noVisit_returnsVisit_corrected() {
         UUID id = UUID.randomUUID();
+
+        Visit saved = new Visit();
+        saved.setId(UUID.randomUUID());
+        saved.setExitTime(LocalDateTime.now());
+
         when(visitRepository.findLastVisitByMembershipId(id)).thenReturn(Optional.empty());
+        when(visitRepository.save(any())).thenReturn(saved);
 
         Visit result = visitService.recordExit(id);
 
         assertNotNull(result);
+        assertNotNull(result.getExitTime());
+
+        verify(visitRepository).save(any());
     }
 
+
     @Test
-    void getLastVisit_noVisit_npe() {
+    void getLastVisit_noVisit_returnsEmptyOptional() {
         UUID id = UUID.randomUUID();
+
         when(visitRepository.findLastVisitByMembershipId(id)).thenReturn(Optional.empty());
 
         Optional<Visit> result = visitService.getLastVisitByMembership(id);
-        assertEquals("expected", result.get().getZone());
+
+        assertTrue(result.isEmpty());
     }
 
+
 }
+

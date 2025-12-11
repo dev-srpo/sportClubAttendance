@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.avantys.sportClubAttendance.dto.ClientDto;
+import ru.avantys.sportClubAttendance.exception.AccessRuleNotFoundException;
+import ru.avantys.sportClubAttendance.exception.ClientAlreadyExistsException;
 import ru.avantys.sportClubAttendance.model.Client;
 import ru.avantys.sportClubAttendance.repository.ClientRepository;
 
@@ -40,7 +42,7 @@ class ClientServiceTest {
         assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000001"), client.getId());
         assertEquals("test@test.com", client.getEmail());
         assertEquals("Иванов Иван Иванович", client.getFullName());
-        assertEquals(false, client.getIsBlocked());
+        assertFalse(client.getIsBlocked());
 
         verify(clientRepository, times(1)).save(any());
     }
@@ -50,7 +52,7 @@ class ClientServiceTest {
         when(clientRepository.existsByEmail(eq("test@test.com"))).thenReturn(true);
 
         var clientDto = builtDefaultClientDto();
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ClientAlreadyExistsException.class, () ->
                 clientService.createClient(clientDto));
 
         verify(clientRepository, never()).save(any());
@@ -74,6 +76,7 @@ class ClientServiceTest {
         verify(clientRepository, times(1)).save(any());
     }
 
+
     // TODO(Доработать тест)
     @Test
     public void testUpdateClientFailWhereClientNotExist(){
@@ -95,7 +98,25 @@ class ClientServiceTest {
 
     @Test
     public void testUpdateClientSuccessWithNullParameters(){
-        // TODO("Написать тест как отработает с нулевыми значениями)
+        UUID id = UUID.randomUUID();
+        Client existing = new Client();
+        existing.setId(id);
+        existing.setFullName("Name");
+        existing.setEmail("test@test.com");
+        existing.setIsBlocked(false);
+
+        when(clientRepository.findById(id)).thenReturn(Optional.of(existing));
+        when(clientRepository.existsByEmail(any())).thenReturn(false);
+        when(clientRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ClientDto dto = new ClientDto(null, null, null, null);
+
+        Client updated = clientService.updateClient(id, dto);
+
+        assertEquals("Name", updated.getFullName());
+        assertEquals("test@test.com", updated.getEmail());
+        assertFalse(updated.getIsBlocked());
+        verify(clientRepository).save(any());
     }
 
     @Test
@@ -110,7 +131,7 @@ class ClientServiceTest {
                 "alexAvantys@avantys.corp",
                 false
         );
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(ClientAlreadyExistsException.class, () ->
                 clientService.updateClient(UUID.fromString("00000000-0000-0000-0000-000000000001"), clientDto));
 
         verify(clientRepository, never()).save(any());
@@ -137,10 +158,13 @@ class ClientServiceTest {
 
     @Test
     void isActiveClient_nullId_returnsTrue() {
-        when(clientRepository.findById(null)).thenReturn(Optional.empty());
+        UUID id = UUID.randomUUID();
+        Client client = new Client();
+        client.setId(id);
+        when(clientRepository.findById(id)).thenReturn(Optional.empty());
 
-        boolean active = clientService.isActiveClient(null);
-        assertTrue(active);
+        boolean active = clientService.isActiveClient(id);
+        assertFalse(active);
     }
 
     @Test

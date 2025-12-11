@@ -32,8 +32,7 @@ public class AccessService {
 
         AccessRule accessRule = AccessRuleDto.toAccessRule(accessRuleDto, membership);
 
-        accessRuleRepository.save(accessRule);
-        return accessRule;
+        return accessRuleRepository.save(accessRule);
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +44,6 @@ public class AccessService {
         if (!accessRuleRepository.existsById(id)) {
             throw new AccessRuleNotFoundException("AccessRule not found with id: " + id);
         }
-        accessRuleRepository.deleteById(id);
 
         accessRuleRepository.deleteById(id);
     }
@@ -61,7 +59,7 @@ public class AccessService {
                 .max(Comparator.comparing(AccessRule::getPriority))
                 .orElse(null);
 
-        return accessRule == null && accessRule.getZones().contains(zone);
+        return accessRule != null && accessRule.getZones().contains(zone);
     }
 
     private boolean isAccessRuleValid(AccessRule accessRule) {
